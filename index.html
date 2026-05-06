@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Classifier</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 350px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      margin: 15px 0;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #5a67d8;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 15px;
+      border-radius: 10px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #2d3748;
+    }
+    .loading {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Classifier</h1>
+    <input type="file" id="imageInput" accept="image/*" />
+    <br />
+    <button onclick="uploadImage()">Predict</button>
+    <div class="loading" id="loading"></div>
+    <img id="preview" />
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const API_URL = "API_URL/predict"; // Replace with your backend URL
+
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const resultDiv = document.getElementById("result");
+    const loadingDiv = document.getElementById("loading");
+
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+      }
+    });
+
+    async function uploadImage() {
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      resultDiv.innerText = "";
+      loadingDiv.innerText = "Processing...";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        loadingDiv.innerText = "";
+
+        // Adjust based on your API response format
+        if (data.prediction) {
+          resultDiv.innerText = `Prediction: ${data.prediction}`;
+        } else {
+          resultDiv.innerText = JSON.stringify(data);
+        }
+
+      } catch (error) {
+        loadingDiv.innerText = "";
+        resultDiv.innerText = "Error connecting to API.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
